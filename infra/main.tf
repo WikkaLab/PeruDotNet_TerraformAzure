@@ -1,3 +1,4 @@
+# Configure the Azure provider
 terraform {
   backend "azurerm" {
     resource_group_name  = "perudotnet-rg"
@@ -5,16 +6,19 @@ terraform {
     container_name       = "tfstatedevops"
     key                  = "tfstatedevops.tfstate"
   }
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0.0"
+    }
+  }
+  required_version = ">= 0.14.9"
 }
- 
+
 provider "azurerm" {
-  # The "feature" block is required for AzureRM provider 2.x.
-  # If you're using version 1.x, the "features" block is not allowed.
-  version = "~>2.0"
   features {}
 }
- 
-data "azurerm_client_config" "current" {}
 
 # Create the resource group
 resource "azurerm_resource_group" "rg" {
@@ -33,12 +37,12 @@ resource "azurerm_service_plan" "appserviceplan" {
 
 # Create the web app, pass in the App Service Plan ID
 resource "azurerm_linux_web_app" "webapp" {
-  name                  = "perudotnet-webapp"
-  location              = azurerm_resource_group.rg.location
-  resource_group_name   = azurerm_resource_group.rg.name
-  service_plan_id       = azurerm_service_plan.appserviceplan.id
-  https_only            = true
-  site_config { 
+  name                = "perudotnet-webapp"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  service_plan_id     = azurerm_service_plan.appserviceplan.id
+  https_only          = true
+  site_config {
     minimum_tls_version = "1.2"
   }
 }
